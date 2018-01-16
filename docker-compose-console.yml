@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+
+  cluster-console:
+     environment:
+         AKKA_ADDRESS: 127.0.0.1
+         AKKA_PORT: 3001
+         AKKA_BIND_ADDRESS: 0.0.0.0
+         AKKA_BIND_PORT: 3001
+     ports:
+       - "9001:9000"
+     image: boldradius/astrolabe
+     #container_name: cluster-console
+     volumes:
+       - /opt/docker/logs/cluster-console
+
+

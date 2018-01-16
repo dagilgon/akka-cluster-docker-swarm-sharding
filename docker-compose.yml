@@ -1,59 +1,163 @@
 version: '3'
 
+
+networks:
+    akka_network:
+
 services:
+
+
   app-seed1:
-    image: "lostintime/hello-akka:0.1.1"
-    command: -Dakka.cluster.seed-nodes.0=akka.tcp://HelloAkka@app-seed1:2552
-             -Dakka.cluster.seed-nodes.1=akka.tcp://HelloAkka@app-seed2:2552
-             -jar /app/hello-akka.jar
+    image: "dgg/hello-akka:latest"
+    #command: #-Dakka.cluster.seed-nodes.0=akka.tcp://HelloAkka@seed1:2551
+             #-Dakka.cluster.seed-nodes.1=akka.tcp://HelloAkka@seed2:2551
+             #-jar /app/hello-akka.jar
+    ports:
+     - "2551:2551"
+     - "8888:8888"
+     #- "30000-65535:30000-65535"
     environment:
-     - 'PUBLISH_HOST=app-seed1'
-    stop_grace_period: 15s
+     PUBLISH_HOST: seed1
+     PUBLISH_PORT: 2551
+     SEED_NODE_1: akka.tcp://HelloAkka@seed1:2551
+     SEED_NODE_2: akka.tcp://HelloAkka@seed2:2551
+    stop_grace_period: 150s
     deploy:
       mode: replicated
       replicas: 1 # DO NOT SCALE THIS SERVICE!
       update_config:
         parallelism: 1
-        delay: 15s
+        delay: 150s
       restart_policy:
         condition: any
-        delay: 20s
+        delay: 200s
         max_attempts: 8
         window: 3m
+    networks:
+      - akka_network
   app-seed2:
-    image: "lostintime/hello-akka:0.1.1"
-    command: -Dakka.cluster.seed-nodes.0=akka.tcp://HelloAkka@app-seed1:2552
-             -Dakka.cluster.seed-nodes.1=akka.tcp://HelloAkka@app-seed2:2552
-             -jar /app/hello-akka.jar
+    image: "dgg/hello-akka:latest"
+    #command: #-Dakka.cluster.seed-nodes.0=akka.tcp://HelloAkka@app-seed1:2551
+             #-Dakka.cluster.seed-nodes.1=akka.tcp://HelloAkka@app-seed2:2551
+             #-jar /app/hello-akka.jar
+    ports:
+      - "2552:2551"
+      - "8889:8888"
+      #- "30000-65535:30000-65535"
+      #- "9000:9000"
     environment:
-     - 'PUBLISH_HOST=app-seed2'
-    stop_grace_period: 15s
+         PUBLISH_HOST: seed2
+         PUBLISH_PORT: 2552
+         SEED_NODE_1: akka.tcp://HelloAkka@seed1:2551
+         SEED_NODE_2: akka.tcp://HelloAkka@seed2:2551
+    stop_grace_period: 150s
     deploy:
       mode: replicated
       replicas: 1 # DO NOT SCALE THIS SERVICE!
       update_config:
         parallelism: 1
-        delay: 15s
+        delay: 150s
       restart_policy:
         condition: any
-        delay: 20s
+        delay: 200s
         max_attempts: 8
         window: 3m
-  app:
-    image: "lostintime/hello-akka:0.1.1"
-    command: -Dakka.cluster.seed-nodes.0=akka.tcp://HelloAkka@app-seed1:2552
-             -Dakka.cluster.seed-nodes.0=akka.tcp://HelloAkka@app-seed2:2552
-             -Dakka.cluster.roles.0=worker
-             -jar /app/hello-akka.jar
-    stop_grace_period: 15s
+    networks:
+      - akka_network
+  appR:
+    image: "dgg/hello-akka:latest"
+    #command: #-Dakka.cluster.seed-nodes.0=akka.tcp://HelloAkka@app-seed1:2551
+             #-Dakka.cluster.seed-nodes.0=akka.tcp://HelloAkka@app-seed2:2551
+             #-Dakka.cluster.roles.0=rojo
+             #-jar /app/hello-akka.jar
+    #ports:
+    #  - "30000-65535:30000-65535"
+    environment:
+      #PUBLISH_HOST: rojo
+      SEED_NODE_1: akka.tcp://HelloAkka@seed1:2551
+      SEED_NODE_2: akka.tcp://HelloAkka@seed2:2551
+    stop_grace_period: 150s
     deploy:
+      placement:
+        constraints:
+          - node.labels.tipo == rojo
       mode: replicated
       replicas: 1
       update_config:
         parallelism: 1
-        delay: 15s
+        delay: 150s
       restart_policy:
         condition: any
-        delay: 20s
+        delay: 200s
         max_attempts: 8
         window: 3m
+    networks:
+      - akka_network
+
+
+  #appV:
+  #    image: "dgg/hello-akka:0.1.2"
+  #    command: -Dakka.cluster.seed-nodes.0=akka.tcp://HelloAkka@app-seed1:2552
+  #             -Dakka.cluster.seed-nodes.0=akka.tcp://HelloAkka@app-seed2:2552
+  #             -Dakka.cluster.roles.0=verde
+  #             -jar /app/hello-akka.jar
+  #    stop_grace_period: 15s
+  #    deploy:
+  #      placement:
+  #        constraints:
+  #          - node.labels.tipo == verde
+  #      mode: replicated
+  #      replicas: 1
+  #      update_config:
+  #        parallelism: 1
+  #        delay: 15s
+  #      restart_policy:
+  #        condition: any
+  #        delay: 20s
+  #        max_attempts: 8
+  #        window: 3m
+
+  #appA:
+  #    image: "dgg/hello-akka:0.1.2"
+  #    command: -Dakka.cluster.seed-nodes.0=akka.tcp://HelloAkka@app-seed1:2552
+  #             -Dakka.cluster.seed-nodes.0=akka.tcp://HelloAkka@app-seed2:2552
+  #             -Dakka.cluster.roles.0=azul
+  #             -jar /app/hello-akka.jar
+  #    stop_grace_period: 15s
+  #    deploy:
+  #      placement:
+  #        constraints:
+  #          - node.labels.tipo == azul
+  #      mode: replicated
+  #      replicas: 1
+  #      update_config:
+  #        parallelism: 1
+  #        delay: 15s
+  #      restart_policy:
+  #        condition: any
+  #        delay: 20s
+  #        max_attempts: 8
+  #        window: 3m
+
+  cluster-console:
+     environment:
+         #AKKA_ADDRESS: 127.0.0.1
+         #AKKA_PORT: 3001
+         #AKKA_BIND_ADDRESS: 0.0.0.0
+         #AKKA_BIND_PORT: 3001
+         SEED_NODE_1: akka.tcp://HelloAkka@seed1:2551
+         SEED_NODE_2: akka.tcp://HelloAkka@seed2:2551
+     ports:
+       - "9000:9000"
+     #  - "30000-65535:30000-65535"
+     networks:
+        - akka_network
+     #expose:
+     #  - "9001"
+     #net: "host"
+     image: boldradius/astrolabe
+     #container_name: cluster-console
+     volumes:
+       - /opt/docker/logs/cluster-console
+
+
