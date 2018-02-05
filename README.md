@@ -11,6 +11,6 @@ sudo docker service logs akka_app-seed1
 
 # Create actors on demand ...
 
-http://localhost:8888/ramdom?from=yo&to=pepe&payload=hola%20majo
+http://0.0.0.0:8888/ramdom?from=yo&to=pepe&payload=hola%20majo
 
 
